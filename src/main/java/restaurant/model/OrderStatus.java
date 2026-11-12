@@ -25,7 +25,7 @@ public enum OrderStatus {
     public boolean canMoveTo(OrderStatus next) {
         return switch (this) {
             case PENDING -> next == COOKING || next == CANCELLED;
-            case COOKING -> next == READY;
+            case COOKING -> next == READY || next == CANCELLED;
             case READY, CANCELLED -> false;
         };
     }

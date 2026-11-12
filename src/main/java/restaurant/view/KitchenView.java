@@ -78,11 +78,13 @@ public final class KitchenView {
                 sb.append("<div class='ticket-actions'>");
                 if (status == OrderStatus.PENDING) {
                     sb.append(makeActionButton(o.getOrderId(), OrderStatus.COOKING, "Nhận chế biến", "#0284c7"));
-                    sb.append(makeActionButton(o.getOrderId(), OrderStatus.CANCELLED, "Hủy đơn", "#dc2626"));
                 } else if (status == OrderStatus.COOKING) {
                     sb.append(makeActionButton(o.getOrderId(), OrderStatus.READY, "Hoàn tất & Trả món", "#16a34a"));
                 } else {
                     sb.append("<div style='color:#64748b; font-size:0.85em; text-align:center; width:100%; padding:8px 0;'>Đơn đã đóng lưu trữ</div>");
+                }
+                if (status.canMoveTo(OrderStatus.CANCELLED)) {
+                    sb.append(makeActionButton(o.getOrderId(), OrderStatus.CANCELLED, "Hủy đơn", "#dc2626"));
                 }
                 sb.append("</div></div>");
                 sb.append("</div>");

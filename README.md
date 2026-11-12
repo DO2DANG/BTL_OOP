@@ -40,7 +40,7 @@ Mã Java nằm trong `src/main/java/restaurant`.
 | `controller` | Đọc yêu cầu HTTP, gọi model hoặc service và trả kết quả cho trình duyệt. |
 | `view` và `src/main/resources/assets` | Dựng HTML theo dữ liệu Java, phục vụ CSS và JavaScript cho hai màn hình. |
 
-`CustomerController` lấy giỏ theo cookie, thêm món hoặc đổi số lượng trong `CartSession`, rồi gọi `CustomerView` để trả phần HTML của giỏ. Khi khách xác nhận, `Customer` kiểm tra thông tin và service tạo `Order` ở trạng thái `PENDING`. `KitchenController` đọc danh sách đơn và gửi phiếu bếp qua `KitchenView`. `Order` kiểm tra các bước chuyển `PENDING → COOKING → READY` và cho phép hủy từ `PENDING`.
+`CustomerController` lấy giỏ theo cookie, thêm món hoặc đổi số lượng trong `CartSession`, rồi gọi `CustomerView` để trả phần HTML của giỏ. Khi khách xác nhận, `Customer` kiểm tra thông tin và service tạo `Order` ở trạng thái `PENDING`. `KitchenController` đọc danh sách đơn và gửi phiếu bếp qua `KitchenView`. `Order` kiểm tra các bước chuyển `PENDING → COOKING → READY` và cho phép hủy từ `PENDING` hoặc `COOKING`.
 
 Trong đồ án, số điện thoại là trường tùy chọn. Nếu nhập, dùng số bắt đầu bằng `0` với 10–11 chữ số hoặc dạng `+84` tương ứng. Có thể dùng dấu cách, dấu chấm và dấu gạch ngang giữa các nhóm chữ số.
 
