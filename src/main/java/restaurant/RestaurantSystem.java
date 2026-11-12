@@ -2,6 +2,7 @@ package restaurant;
 
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import restaurant.controller.CustomerController;
 import restaurant.controller.KitchenController;
@@ -19,10 +20,10 @@ public final class RestaurantSystem {
         RestaurantService restaurant = new RestaurantService();
         RestaurantOwner owner = new RestaurantOwner("chef_admin", "Bếp Trưởng Gà Vàng");
 
-        HttpServer customerServer = HttpServer.create(new InetSocketAddress(CUSTOMER_PORT), 0);
+        HttpServer customerServer = openServer(CUSTOMER_PORT);
         HttpServer kitchenServer = null;
         try {
-            kitchenServer = HttpServer.create(new InetSocketAddress(KITCHEN_PORT), 0);
+            kitchenServer = openServer(KITCHEN_PORT);
             new CustomerController(restaurant).register(customerServer);
             new KitchenController(restaurant, owner).register(kitchenServer);
             customerServer.start();
@@ -35,7 +36,15 @@ public final class RestaurantSystem {
             throw exception;
         }
 
-        System.out.println("Khách hàng: http://localhost:" + CUSTOMER_PORT);
-        System.out.println("Màn hình bếp: http://localhost:" + KITCHEN_PORT);
+        System.out.println("Khách hàng: http://localhost:" + customerServer.getAddress().getPort());
+        System.out.println("Màn hình bếp: http://localhost:" + kitchenServer.getAddress().getPort());
+    }
+
+    private static HttpServer openServer(int preferredPort) throws IOException {
+        try {
+            return HttpServer.create(new InetSocketAddress(preferredPort), 0);
+        } catch (BindException portInUse) {
+            return HttpServer.create(new InetSocketAddress(0), 0);
+        }
     }
 }

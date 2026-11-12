@@ -1,6 +1,6 @@
 # Gà Vàng Phố Cổ
 
-Bài tập lớn OOP Java cho hệ thống đặt món tại bàn. Trang khách dùng cổng **8080** và màn hình bếp dùng cổng **8081**. Cả hai màn hình truy cập cùng một `RestaurantService`.
+Bài tập lớn OOP Java cho hệ thống đặt món tại bàn. Cổng mặc định của trang khách là **8080** và của màn hình bếp là **8081**. Cả hai màn hình truy cập cùng một `RestaurantService`.
 
 ## Chạy dự án
 
@@ -24,6 +24,8 @@ java --add-modules jdk.httpserver -cp 'target/classes;src/main/resources' restau
 
 - [Trang khách](http://localhost:8080)
 - [Màn hình bếp](http://localhost:8081)
+
+Nếu cổng mặc định đang bận, chương trình tự chọn cổng còn trống. Mở hai địa chỉ được in trong cửa sổ Run.
 
 ## Cấu trúc và luồng đặt món
 
