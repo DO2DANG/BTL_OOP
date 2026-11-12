@@ -1,4 +1,4 @@
-package vn.edu.ptit.restaurant.model;
+package restaurant.model;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

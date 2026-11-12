@@ -1,4 +1,4 @@
-package vn.edu.ptit.restaurant.model;
+package restaurant.model;
 
 public enum OrderStatus {
     PENDING("Chờ chuẩn bị", "#d97706"),

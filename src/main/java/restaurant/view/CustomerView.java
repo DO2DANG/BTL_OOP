@@ -1,9 +1,9 @@
-package vn.edu.ptit.restaurant.view;
+package restaurant.view;
 
 import java.util.List;
-import vn.edu.ptit.restaurant.model.CartSession;
-import vn.edu.ptit.restaurant.model.MenuItem;
-import vn.edu.ptit.restaurant.model.OrderItem;
+import restaurant.model.CartSession;
+import restaurant.model.MenuItem;
+import restaurant.model.OrderItem;
 
 public final class CustomerView {
     private CustomerView() {

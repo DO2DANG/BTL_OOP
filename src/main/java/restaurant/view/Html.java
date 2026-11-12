@@ -1,4 +1,4 @@
-package vn.edu.ptit.restaurant.view;
+package restaurant.view;
 
 import java.text.NumberFormat;
 import java.util.Locale;

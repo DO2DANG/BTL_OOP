@@ -1,13 +1,13 @@
-package vn.edu.ptit.restaurant.controller;
+package restaurant.controller;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.util.Map;
-import vn.edu.ptit.restaurant.model.OrderStatus;
-import vn.edu.ptit.restaurant.model.RestaurantOwner;
-import vn.edu.ptit.restaurant.service.RestaurantService;
-import vn.edu.ptit.restaurant.view.KitchenView;
+import restaurant.model.OrderStatus;
+import restaurant.model.RestaurantOwner;
+import restaurant.service.RestaurantService;
+import restaurant.view.KitchenView;
 
 public final class KitchenController {
     private final RestaurantService restaurant;

@@ -1,12 +1,12 @@
-package vn.edu.ptit.restaurant;
+package restaurant;
 
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import vn.edu.ptit.restaurant.controller.CustomerController;
-import vn.edu.ptit.restaurant.controller.KitchenController;
-import vn.edu.ptit.restaurant.model.RestaurantOwner;
-import vn.edu.ptit.restaurant.service.RestaurantService;
+import restaurant.controller.CustomerController;
+import restaurant.controller.KitchenController;
+import restaurant.model.RestaurantOwner;
+import restaurant.service.RestaurantService;
 
 public final class RestaurantSystem {
     private static final int CUSTOMER_PORT = 8080;

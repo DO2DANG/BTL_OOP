@@ -1,4 +1,4 @@
-package vn.edu.ptit.restaurant.controller;
+package restaurant.controller;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;

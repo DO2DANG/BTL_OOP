@@ -1,8 +1,8 @@
-package vn.edu.ptit.restaurant.model;
+package restaurant.model;
 
 import java.util.UUID;
 import java.util.regex.Pattern;
-import vn.edu.ptit.restaurant.exception.InvalidPhoneNumberException;
+import restaurant.exception.InvalidPhoneNumberException;
 
 public final class Customer extends User {
     private static final Pattern PHONE_PATTERN = Pattern.compile("(?:0|\\+84)[1-9][0-9]{8,9}");

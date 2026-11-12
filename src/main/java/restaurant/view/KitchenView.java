@@ -1,10 +1,10 @@
-package vn.edu.ptit.restaurant.view;
+package restaurant.view;
 
 import java.util.List;
-import vn.edu.ptit.restaurant.model.Order;
-import vn.edu.ptit.restaurant.model.OrderItem;
-import vn.edu.ptit.restaurant.model.OrderStatus;
-import vn.edu.ptit.restaurant.model.User;
+import restaurant.model.Order;
+import restaurant.model.OrderItem;
+import restaurant.model.OrderStatus;
+import restaurant.model.User;
 
 public final class KitchenView {
     private KitchenView() {

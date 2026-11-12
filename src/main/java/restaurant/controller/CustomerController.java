@@ -1,4 +1,4 @@
-package vn.edu.ptit.restaurant.controller;
+package restaurant.controller;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import vn.edu.ptit.restaurant.exception.InvalidPhoneNumberException;
-import vn.edu.ptit.restaurant.model.CartSession;
-import vn.edu.ptit.restaurant.model.Customer;
-import vn.edu.ptit.restaurant.model.MenuItem;
-import vn.edu.ptit.restaurant.model.Order;
-import vn.edu.ptit.restaurant.service.RestaurantService;
-import vn.edu.ptit.restaurant.view.CustomerView;
+import restaurant.exception.InvalidPhoneNumberException;
+import restaurant.model.CartSession;
+import restaurant.model.Customer;
+import restaurant.model.MenuItem;
+import restaurant.model.Order;
+import restaurant.service.RestaurantService;
+import restaurant.view.CustomerView;
 
 public final class CustomerController {
     private static final String CART_COOKIE = "restaurantCart=";

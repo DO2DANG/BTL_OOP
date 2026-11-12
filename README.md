@@ -4,7 +4,7 @@ Bài tập lớn OOP Java cho hệ thống đặt món tại bàn. Trang khách 
 
 ## Chạy dự án
 
-Dùng JDK 17 trở lên. Với IntelliJ IDEA, mở thư mục chứa `pom.xml` rồi chạy `vn.edu.ptit.restaurant.RestaurantSystem`.
+Dùng JDK 17 trở lên. Với IntelliJ IDEA, mở thư mục chứa `pom.xml` rồi chạy `restaurant.RestaurantSystem`.
 
 Nếu dùng Maven, chạy từ thư mục gốc của dự án.
 
@@ -19,7 +19,7 @@ Có thể biên dịch bằng JDK ngay trong PowerShell.
 $sources = Get-ChildItem -LiteralPath src/main/java -Recurse -Filter *.java | ForEach-Object FullName
 New-Item -ItemType Directory -Force -Path target/classes | Out-Null
 javac --release 17 --add-modules jdk.httpserver -encoding UTF-8 -d target/classes $sources
-java --add-modules jdk.httpserver -cp 'target/classes;src/main/resources' vn.edu.ptit.restaurant.RestaurantSystem
+java --add-modules jdk.httpserver -cp 'target/classes;src/main/resources' restaurant.RestaurantSystem
 ```
 
 - [Trang khách](http://localhost:8080)
@@ -27,7 +27,7 @@ java --add-modules jdk.httpserver -cp 'target/classes;src/main/resources' vn.edu
 
 ## Cấu trúc và luồng đặt món
 
-Mã Java nằm trong `src/main/java/vn/edu/ptit/restaurant`.
+Mã Java nằm trong `src/main/java/restaurant`.
 
 | Thành phần | Nhiệm vụ |
 |---|---|

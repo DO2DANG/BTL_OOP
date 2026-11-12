@@ -1,4 +1,4 @@
-package vn.edu.ptit.restaurant.exception;
+package restaurant.exception;
 
 public final class InvalidPhoneNumberException extends Exception {
     private static final long serialVersionUID = 1L;

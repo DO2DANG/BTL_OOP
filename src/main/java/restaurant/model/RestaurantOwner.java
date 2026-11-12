@@ -1,4 +1,4 @@
-package vn.edu.ptit.restaurant.model;
+package restaurant.model;
 
 public final class RestaurantOwner extends User {
     public RestaurantOwner(String username, String fullName) {

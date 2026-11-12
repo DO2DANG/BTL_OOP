@@ -1,4 +1,4 @@
-package vn.edu.ptit.restaurant.model;
+package restaurant.model;
 
 public final class MenuItem {
     private final int id;

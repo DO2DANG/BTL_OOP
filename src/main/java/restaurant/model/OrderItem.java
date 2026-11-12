@@ -1,4 +1,4 @@
-package vn.edu.ptit.restaurant.model;
+package restaurant.model;
 
 import java.util.Objects;
 

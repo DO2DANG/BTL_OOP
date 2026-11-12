@@ -1,14 +1,14 @@
-package vn.edu.ptit.restaurant.service;
+package restaurant.service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import vn.edu.ptit.restaurant.model.CartSession;
-import vn.edu.ptit.restaurant.model.Customer;
-import vn.edu.ptit.restaurant.model.MenuItem;
-import vn.edu.ptit.restaurant.model.Order;
-import vn.edu.ptit.restaurant.model.OrderItem;
-import vn.edu.ptit.restaurant.model.OrderStatus;
+import restaurant.model.CartSession;
+import restaurant.model.Customer;
+import restaurant.model.MenuItem;
+import restaurant.model.Order;
+import restaurant.model.OrderItem;
+import restaurant.model.OrderStatus;
 
 public final class RestaurantService {
     private static final List<MenuItem> MENU = List.of(
