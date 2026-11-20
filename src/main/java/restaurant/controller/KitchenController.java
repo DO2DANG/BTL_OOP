@@ -4,20 +4,27 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
+import restaurant.exception.InvalidOrderStateException;
+import restaurant.exception.ResourceNotFoundException;
 import restaurant.model.OrderStatus;
-import restaurant.model.RestaurantOwner;
-import restaurant.service.RestaurantService;
+import restaurant.model.User;
+import restaurant.service.OrderService;
 import restaurant.view.KitchenView;
 
-public final class KitchenController {
-    private final RestaurantService restaurant;
-    private final RestaurantOwner owner;
+public final class KitchenController implements WebController {
+    private final OrderService orderService;
+    private final User operator;
 
-    public KitchenController(RestaurantService restaurant, RestaurantOwner owner) {
-        this.restaurant = restaurant;
-        this.owner = owner;
+    public KitchenController(OrderService orderService, User operator) {
+        this.orderService = Objects.requireNonNull(orderService, "OrderService không được để trống.");
+        this.operator = Objects.requireNonNull(operator, "Người trực bếp không được để trống.");
+        if (!operator.canManageKitchen()) {
+            throw new IllegalArgumentException("Tài khoản '" + operator.getName() + "' không có quyền điều phối bếp.");
+        }
     }
 
+    @Override
     public void register(HttpServer server) throws IOException {
         HttpSupport.register(server, "/", "GET", this::showOrders);
         HttpSupport.register(server, "/status", "POST", this::changeStatus);
@@ -26,7 +33,10 @@ public final class KitchenController {
     }
 
     private void showOrders(HttpExchange exchange) throws IOException {
-        String page = KitchenView.buildOwnerHtml(restaurant.getOrders(), owner, restaurant.calculateTotalRevenue());
+        String page = KitchenView.buildOwnerHtml(
+                orderService.getOrders(),
+                operator,
+                orderService.calculateTotalRevenue());
         HttpSupport.html(exchange, 200, page);
     }
 
@@ -35,15 +45,14 @@ public final class KitchenController {
             Map<String, String> fields = HttpSupport.readForm(exchange);
             int orderId = HttpSupport.readNumber(fields, "orderId", "Mã đơn không hợp lệ.");
             OrderStatus status = readStatus(fields.getOrDefault("status", ""));
-            if (!restaurant.changeStatus(orderId, status)) {
-                HttpSupport.text(exchange, 404, "Không tìm thấy đơn hàng.");
-                return;
-            }
+            orderService.changeStatus(orderId, status);
             HttpSupport.redirect(exchange, "/");
+        } catch (ResourceNotFoundException exception) {
+            HttpSupport.text(exchange, 404, exception.getMessage());
+        } catch (InvalidOrderStateException exception) {
+            HttpSupport.text(exchange, 409, exception.getMessage());
         } catch (IllegalArgumentException exception) {
             HttpSupport.text(exchange, 400, exception.getMessage());
-        } catch (IllegalStateException exception) {
-            HttpSupport.text(exchange, 409, exception.getMessage());
         }
     }
 

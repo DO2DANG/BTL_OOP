@@ -1,19 +1,19 @@
 # Gà Vàng Phố Cổ
 
-Bài tập lớn OOP Java cho hệ thống đặt món tại bàn. Cổng mặc định của trang khách là **8080** và của màn hình bếp là **8081**. Cả hai màn hình truy cập cùng một `RestaurantService`.
+Bài tập lớn OOP Java cho hệ thống đặt món tại bàn chuyên các món Gà & Cơm Gà. Cổng mặc định của trang khách là **8080** và của màn hình bếp là **8081**.
 
 ## Chạy dự án
 
 Dùng JDK 17 trở lên. Với IntelliJ IDEA, mở thư mục chứa `pom.xml` rồi chạy `restaurant.RestaurantSystem`.
 
-Nếu dùng Maven, chạy từ thư mục gốc của dự án.
+Nếu dùng Maven, chạy từ thư mục gốc của dự án:
 
 ```powershell
 mvn clean package
 java --add-modules jdk.httpserver -jar target/restaurant-system-1.0.0.jar
 ```
 
-Có thể biên dịch bằng JDK ngay trong PowerShell.
+Có thể biên dịch và chạy trực tiếp bằng JDK ngay trong PowerShell:
 
 ```powershell
 $sources = Get-ChildItem -LiteralPath src/main/java -Recurse -Filter *.java | ForEach-Object FullName
@@ -22,37 +22,48 @@ javac --release 17 --add-modules jdk.httpserver -encoding UTF-8 -d target/classe
 java --add-modules jdk.httpserver -cp 'target/classes;src/main/resources' restaurant.RestaurantSystem
 ```
 
+Để bật chế độ lưu lịch sử đơn hàng bền vững ra tệp (`data/orders.txt`) thay vì chỉ lưu trên RAM, thêm tham số `--file`:
+
+```powershell
+java --add-modules jdk.httpserver -cp 'target/classes;src/main/resources' restaurant.RestaurantSystem --file
+```
+
 - [Trang khách](http://localhost:8080)
 - [Màn hình bếp](http://localhost:8081)
 
-Nếu cổng mặc định đang bận, chương trình tự chọn cổng còn trống. Mở hai địa chỉ được in trong cửa sổ Run.
+Nếu cổng mặc định đang bận, chương trình tự chọn cổng còn trống và in địa chỉ tương ứng ra cửa sổ dòng lệnh.
 
-## Cấu trúc và luồng đặt món
+## Kiểm thử tự động các tiêu chí OOP
 
-Mã Java nằm trong `src/main/java/restaurant`.
+Dự án đi kèm bộ kiểm thử tự động `RestaurantOopTest` (không phụ thuộc thư viện ngoài) kiểm chứng kế thừa, đa hình, đóng gói, ngoại lệ, lưu tệp và luồng đơn hàng:
 
-| Thành phần | Nhiệm vụ |
+```powershell
+$mainSources = Get-ChildItem -LiteralPath src/main/java -Recurse -Filter *.java | ForEach-Object FullName
+$testSources = Get-ChildItem -LiteralPath src/test/java -Recurse -Filter *.java | ForEach-Object FullName
+New-Item -ItemType Directory -Force -Path target/test-classes | Out-Null
+javac --release 17 --add-modules jdk.httpserver,java.net.http -encoding UTF-8 -d target/test-classes $mainSources $testSources
+java --add-modules jdk.httpserver,java.net.http -cp 'target/test-classes;src/main/resources' restaurant.RestaurantOopTest
+```
+
+## Cấu trúc kiến trúc OOP & SOLID
+
+Mã nguồn nằm trong `src/main/java/restaurant`:
+
+| Thành phần | Nhiệm vụ & Tiêu chí OOP áp dụng |
 |---|---|
-| `RestaurantSystem.java` | Khởi động hai máy chủ HTTP và truyền cùng một service cho hai controller. |
-| `model` | `User`, `Customer`, `RestaurantOwner`, `MenuItem`, `OrderItem`, `CartSession`, `Order` và `OrderStatus`. |
-| `exception` | `InvalidPhoneNumberException` biểu diễn số điện thoại sai định dạng. |
-| `service` | Giữ thực đơn, tạo đơn, cập nhật đơn và tính tổng tiền của các đơn đã hoàn tất. |
-| `controller` | Đọc yêu cầu HTTP, gọi model hoặc service và trả kết quả cho trình duyệt. |
-| `view` và `src/main/resources/assets` | Dựng HTML theo dữ liệu Java, phục vụ CSS và JavaScript cho hai màn hình. |
-
-`CustomerController` lấy giỏ theo cookie, thêm món hoặc đổi số lượng trong `CartSession`, rồi gọi `CustomerView` để trả phần HTML của giỏ. Khi khách xác nhận, `Customer` kiểm tra thông tin và service tạo `Order` ở trạng thái `PENDING`. `KitchenController` đọc danh sách đơn và gửi phiếu bếp qua `KitchenView`. `Order` kiểm tra các bước chuyển `PENDING → COOKING → READY` và cho phép hủy từ `PENDING` hoặc `COOKING`.
-
-Trong đồ án, số điện thoại là trường tùy chọn. Nếu nhập, dùng số bắt đầu bằng `0` với 10–11 chữ số hoặc dạng `+84` tương ứng. Có thể dùng dấu cách, dấu chấm và dấu gạch ngang giữa các nhóm chữ số.
+| `RestaurantSystem.java` | Khởi tạo và tiêm phụ thuộc (Dependency Injection) cho `MenuRepository`, `OrderRepository`, `OrderService` và các `WebController`. |
+| `model` | Đóng gói dữ liệu bất biến & kiểm tra ràng buộc (`Validation`). Kế thừa & Đa hình trên cây `User` (`Customer`, `RestaurantOwner`) và cây `MenuItem` (`ChickenDish`, `SideDish`, `Beverage`); phân loại bằng `enum MenuCategory`; máy trạng thái `Order` + `OrderStatus`; phiên giỏ hàng `CartSession`. |
+| `exception` | Cây kế thừa ngoại lệ nghiệp vụ từ lớp trừu tượng `RestaurantException` (`InvalidPhoneNumberException`, `EmptyCartException`, `InvalidOrderStateException`, `ResourceNotFoundException`). |
+| `repository` | Trừu tượng hóa lưu trữ qua `interface MenuRepository` (`InMemoryMenuRepository`) và `interface OrderRepository` (`InMemoryOrderRepository`, `FileOrderRepository` dùng Java NIO). |
+| `service` | `interface OrderService` và lớp thực thi `RestaurantService` xử lý nghiệp vụ đặt món, chuyển trạng thái và tính doanh thu. |
+| `controller` | `interface WebController` cùng `CustomerController`, `KitchenController` và `HttpSupport` quản lý cookie giỏ hàng (giới hạn LRU), kiểm tra quyền bếp và ánh xạ mã lỗi HTTP. |
+| `view` & `resources/assets` | Tách biệt hoàn toàn hiển thị HTML/CSS/JS khỏi tầng `model` (chống XSS, định dạng tiền/thời gian, tự động sinh danh mục từ `MenuCategory`). |
 
 ## Phân công và nghiệm thu
 
 | Thành viên | Phụ trách | Kịch bản nghiệm thu |
 |---|---|---|
-| 1 | Model người dùng, món, đơn và exception | Giải thích `User` và hai lớp con. Tạo khách với số hợp lệ, số bỏ trống và số sai. |
-| 2 | `CartSession` và `RestaurantService` | Thêm, giảm, xóa món, tính tiền, kiểm tra giỏ trống và dữ liệu đơn sau khi xóa giỏ. |
-| 3 | Trang khách và `CustomerController` | Dùng cửa sổ thường và cửa sổ ẩn danh để kiểm tra hai giỏ. Nhập số sai, sửa lại rồi gửi đơn thành công. |
-| 4 | Trang bếp, `KitchenController` và tích hợp | Nhận chế biến, hoàn tất, hủy đơn, kiểm tra tổng tiền và chạy demo từ lúc chọn món. |
-
-Mỗi người làm trên một nhánh riêng và gửi pull request để một thành viên khác kiểm tra. Nhóm chạy chung một kịch bản từ trang khách đến trang bếp trước buổi bảo vệ.
-
-Dữ liệu giỏ và đơn hàng nằm trong RAM và được khởi tạo lại khi chạy lại chương trình.
+| 1 | `model` người dùng, thực đơn đa hình (`MenuItem` → `ChickenDish`, `SideDish`, `Beverage`), `MenuCategory` và cây `exception` | Giải thích kế thừa/đa hình trên `User` và `MenuItem`. Tạo đối tượng hợp lệ và kiểm tra ném ngoại lệ khi dữ liệu/SĐT sai. |
+| 2 | `CartSession`, `repository` (`InMemory` & `FileOrderRepository`) và `OrderService` | Thêm, giảm, xóa món, `snapshot`/`drainItems`, kiểm tra giỏ trống và thử nghiệm chuyển đổi đa hình giữa lưu RAM và lưu tệp `--file`. |
+| 3 | Trang khách (`CustomerView`, `customer.css`, `customer.js`) và `CustomerController` | Dùng cửa sổ thường và cửa sổ ẩn danh để kiểm tra hai giỏ độc lập, lọc danh mục động, giao diện di động và xử lý lỗi đặt đơn. |
+| 4 | Trang bếp (`KitchenView`, `kitchen.css`, `kitchen.js`), `KitchenController` và `RestaurantOopTest` | Kiểm tra quyền `canManageKitchen()`, chuyển trạng thái `PENDING → COOKING → READY`, hủy đơn, tính doanh thu và chạy `RestaurantOopTest`. |

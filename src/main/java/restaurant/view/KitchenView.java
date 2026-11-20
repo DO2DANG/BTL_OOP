@@ -1,6 +1,7 @@
 package restaurant.view;
 
 import java.util.List;
+import restaurant.model.Customer;
 import restaurant.model.Order;
 import restaurant.model.OrderItem;
 import restaurant.model.OrderStatus;
@@ -25,66 +26,71 @@ public final class KitchenView {
         // Nav
         sb.append("<div class='top-nav'>");
         sb.append("<div class='logo'>KITCHEN DISPLAY SYSTEM — GÀ VÀNG PHỐ CỔ</div>");
-        sb.append("<div>Người trực: <strong>").append(Html.escape(owner.getName())).append("</strong> (").append(Html.escape(owner.getRoleName())).append(")</div>");
+        sb.append("<div>Người trực: <strong>").append(Html.escape(owner.getProfileSummary())).append("</strong></div>");
         sb.append("</div>");
 
         // Metrics
         sb.append("<div class='metrics-grid'>");
-        sb.append("<div class='metric-tile'><div class='metric-title'>Đơn Chờ Chế Biến</div><div class='metric-value' style='color:#f59e0b;'>").append(pendingOrders).append("</div></div>");
-        sb.append("<div class='metric-tile'><div class='metric-title'>Đang Chế Biến</div><div class='metric-value' style='color:#38bdf8;'>").append(cookingOrders).append("</div></div>");
+        sb.append("<div class='metric-tile'><div class='metric-title'>Đơn Chờ Chế Biến</div><div class='metric-value metric-pending'>").append(pendingOrders).append("</div></div>");
+        sb.append("<div class='metric-tile'><div class='metric-title'>Đang Chế Biến</div><div class='metric-value metric-cooking'>").append(cookingOrders).append("</div></div>");
         sb.append("<div class='metric-tile'><div class='metric-title'>Tổng Số Đơn Nhận</div><div class='metric-value'>").append(orders.size()).append("</div></div>");
-        sb.append("<div class='metric-tile'><div class='metric-title'>Doanh Thu Hoàn Tất</div><div class='metric-value' style='color:#4ade80;'>").append(Html.money(revenue)).append(" đ</div></div>");
+        sb.append("<div class='metric-tile'><div class='metric-title'>Doanh Thu Hoàn Tất</div><div class='metric-value metric-revenue'>").append(Html.money(revenue)).append(" đ</div></div>");
         sb.append("</div>");
 
         // Tickets
-        sb.append("<h3 style='margin-bottom:18px; color:#cbd5e1;'>Danh Sách Phiếu Order Thời Gian Thực</h3>");
+        sb.append("<h3 class='section-heading'>Danh Sách Phiếu Order Thời Gian Thực</h3>");
         sb.append("<div class='orders-grid'>");
         if (orders.isEmpty()) {
-            sb.append("<p style='color:#64748b; font-style:italic;'>Chưa có phiếu order nào từ khách hàng.</p>");
+            sb.append("<p class='empty-orders'>Chưa có phiếu order nào từ khách hàng.</p>");
         } else {
             for (Order o : orders) {
                 OrderStatus status = o.getStatus();
+                Customer customer = o.getCustomer();
                 sb.append("<div class='order-ticket'>");
                 sb.append("<div>");
                 sb.append("<div class='ticket-header'>");
                 sb.append("<div class='ticket-id'>PHIẾU #").append(o.getOrderId()).append("</div>");
-                sb.append("<div class='status-tag' style='background:").append(status.getColor()).append(";'>").append(status.getTitle()).append("</div>");
+                sb.append("<div class='status-tag ").append(statusClass(status)).append("'>")
+                  .append(Html.escape(status.getTitle())).append("</div>");
                 sb.append("</div>");
 
                 sb.append("<div class='customer-detail'>");
-                sb.append("Khách: <b>").append(Html.escape(o.getCustomer().getName())).append("</b> | Vị trí: <span style='color:#facc15; font-weight:bold;'>").append(Html.escape(o.getCustomer().getTableNumber())).append("</span><br>");
-                sb.append("SĐT: ").append(Html.escape(o.getCustomer().getPhone().isEmpty() ? "Chưa có SĐT" : o.getCustomer().getPhone())).append(" | Lúc: ").append(o.getCreatedAt());
+                sb.append("Khách: <b>").append(Html.escape(customer.getName())).append("</b> | Vị trí: <span class='table-highlight'>")
+                  .append(Html.escape(customer.getTableNumber())).append("</span><br>");
+                sb.append("SĐT: ").append(Html.escape(customer.getPhone().isEmpty() ? "Chưa có SĐT" : customer.getPhone()))
+                  .append(" | Lúc: ").append(Html.time(o.getCreatedAt()))
+                  .append(" | Dự kiến: ~").append(o.estimatePrepMinutes()).append(" phút");
                 sb.append("</div>");
 
                 sb.append("<div class='food-items'>");
                 for (OrderItem oi : o.getItems()) {
                     sb.append("<div class='food-line'>");
-                    sb.append("<span>• ").append(Html.escape(oi.getItem().getName())).append(" x<b style='color:#facc15;'>").append(oi.getQuantity()).append("</b></span>");
+                    sb.append("<span>• ").append(Html.escape(oi.getItem().getName())).append(" x<b class='qty-highlight'>").append(oi.getQuantity()).append("</b></span>");
                     sb.append("<span>").append(Html.money(oi.getSubtotal())).append(" đ</span>");
                     sb.append("</div>");
                     if (!oi.getNote().isBlank()) {
-                        sb.append("<div style='color:#fb7185; font-size:0.85em; margin:-4px 0 6px 12px;'>Ghi chú: ").append(Html.escape(oi.getNote())).append("</div>");
+                        sb.append("<div class='item-note'>Ghi chú: ").append(Html.escape(oi.getNote())).append("</div>");
                     }
                 }
                 sb.append("</div>");
                 sb.append("</div>");
 
                 sb.append("<div>");
-                sb.append("<div style='display:flex; justify-content:space-between; margin-top:10px; font-weight:700; border-top:1px solid #334155; padding-top:10px;'>");
+                sb.append("<div class='ticket-total-row'>");
                 sb.append("<span>Tổng cộng:</span>");
-                sb.append("<span style='color:#38bdf8; font-size:1.15em;'>").append(Html.money(o.calculateTotal())).append(" đ</span>");
+                sb.append("<span class='ticket-total-value'>").append(Html.money(o.calculateTotal())).append(" đ</span>");
                 sb.append("</div>");
 
                 sb.append("<div class='ticket-actions'>");
                 if (status == OrderStatus.PENDING) {
-                    sb.append(makeActionButton(o.getOrderId(), OrderStatus.COOKING, "Nhận chế biến", "#0284c7"));
+                    sb.append(makeActionButton(o.getOrderId(), OrderStatus.COOKING, "Nhận chế biến", "btn-cooking"));
                 } else if (status == OrderStatus.COOKING) {
-                    sb.append(makeActionButton(o.getOrderId(), OrderStatus.READY, "Hoàn tất & Trả món", "#16a34a"));
+                    sb.append(makeActionButton(o.getOrderId(), OrderStatus.READY, "Hoàn tất & Trả món", "btn-ready"));
                 } else {
-                    sb.append("<div style='color:#64748b; font-size:0.85em; text-align:center; width:100%; padding:8px 0;'>Đơn đã đóng lưu trữ</div>");
+                    sb.append("<div class='closed-label'>Đơn đã đóng lưu trữ</div>");
                 }
                 if (status.canMoveTo(OrderStatus.CANCELLED)) {
-                    sb.append(makeActionButton(o.getOrderId(), OrderStatus.CANCELLED, "Hủy đơn", "#dc2626"));
+                    sb.append(makeActionButton(o.getOrderId(), OrderStatus.CANCELLED, "Hủy đơn", "btn-cancel"));
                 }
                 sb.append("</div></div>");
                 sb.append("</div>");
@@ -92,17 +98,24 @@ public final class KitchenView {
         }
         sb.append("</div>");
 
-
-
         sb.append("</body></html>");
         return sb.toString();
     }
 
-    private static String makeActionButton(int id, OrderStatus targetStatus, String label, String bg) {
-        return "<form method='POST' action='/status' style='flex:1;'>"
+    private static String statusClass(OrderStatus status) {
+        return switch (status) {
+            case PENDING -> "status-pending";
+            case COOKING -> "status-cooking";
+            case READY -> "status-ready";
+            case CANCELLED -> "status-cancelled";
+        };
+    }
+
+    private static String makeActionButton(int id, OrderStatus targetStatus, String label, String btnClass) {
+        return "<form method='POST' action='/status' class='action-form'>"
                 + "<input type='hidden' name='orderId' value='" + id + "'>"
                 + "<input type='hidden' name='status' value='" + targetStatus.name() + "'>"
-                + "<button type='submit' class='btn-cmd' style='background:" + bg + "; width:100%;'>" + label + "</button>"
+                + "<button type='submit' class='btn-cmd " + btnClass + "'>" + Html.escape(label) + "</button>"
                 + "</form>";
     }
 }

@@ -6,7 +6,17 @@ public final class RestaurantOwner extends User {
     }
 
     @Override
+    public boolean canManageKitchen() {
+        return true;
+    }
+
+    @Override
     public String getRoleName() {
         return "Quản trị / Chủ nhà hàng";
+    }
+
+    @Override
+    public String getProfileSummary() {
+        return getName() + " (" + getRoleName() + ")";
     }
 }

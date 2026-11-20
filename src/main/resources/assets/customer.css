@@ -222,6 +222,10 @@ body {
   position: relative; z-index: 2; padding: 18px; flex-grow: 1;
   display: flex; flex-direction: column; justify-content: space-between; gap: 14px;
 }
+.food-spec {
+  font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--color-primary); margin-bottom: 4px;
+}
 .food-title {
   font-family: 'Playfair Display', serif; font-size: 1.24rem; font-weight: 700;
   color: var(--color-espresso-950); margin-bottom: 6px; line-height: 1.3;

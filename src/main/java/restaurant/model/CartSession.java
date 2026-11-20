@@ -3,11 +3,24 @@ package restaurant.model;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import restaurant.exception.EmptyCartException;
 
 public final class CartSession {
+    public record Snapshot(List<OrderItem> items, int totalQuantity, long totalPrice) {
+        public Snapshot {
+            items = List.copyOf(items);
+        }
+
+        public boolean isEmpty() {
+            return items.isEmpty();
+        }
+    }
+
     private final Map<Integer, OrderItem> items = new LinkedHashMap<>();
 
     public synchronized void addProduct(MenuItem product, String note) {
+        Objects.requireNonNull(product, "Món thêm vào giỏ không được để trống.");
         int productId = product.getId();
         OrderItem current = items.get(productId);
         if (current == null) {
@@ -45,6 +58,22 @@ public final class CartSession {
 
     public synchronized long getTotalPrice() {
         return items.values().stream().mapToLong(OrderItem::getSubtotal).sum();
+    }
+
+    public synchronized Snapshot snapshot() {
+        List<OrderItem> currentItems = List.copyOf(items.values());
+        int totalQty = currentItems.stream().mapToInt(OrderItem::getQuantity).sum();
+        long totalPrice = currentItems.stream().mapToLong(OrderItem::getSubtotal).sum();
+        return new Snapshot(currentItems, totalQty, totalPrice);
+    }
+
+    public synchronized List<OrderItem> drainItems() throws EmptyCartException {
+        if (items.isEmpty()) {
+            throw new EmptyCartException();
+        }
+        List<OrderItem> drained = List.copyOf(items.values());
+        items.clear();
+        return drained;
     }
 
     public synchronized void clear() {

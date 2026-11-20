@@ -3,28 +3,39 @@ package restaurant.controller;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import restaurant.exception.InvalidPhoneNumberException;
+import restaurant.exception.ResourceNotFoundException;
+import restaurant.exception.RestaurantException;
 import restaurant.model.CartSession;
 import restaurant.model.Customer;
 import restaurant.model.MenuItem;
 import restaurant.model.Order;
-import restaurant.service.RestaurantService;
+import restaurant.service.OrderService;
 import restaurant.view.CustomerView;
 
-public final class CustomerController {
+public final class CustomerController implements WebController {
     private static final String CART_COOKIE = "restaurantCart=";
+    private static final int MAX_ACTIVE_CARTS = 1000;
 
-    private final RestaurantService restaurant;
-    private final Map<String, CartSession> carts = new ConcurrentHashMap<>();
+    private final OrderService orderService;
+    private final Map<String, CartSession> carts = Collections.synchronizedMap(
+            new LinkedHashMap<>(128, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, CartSession> eldest) {
+                    return size() > MAX_ACTIVE_CARTS;
+                }
+            });
 
-    public CustomerController(RestaurantService restaurant) {
-        this.restaurant = restaurant;
+    public CustomerController(OrderService orderService) {
+        this.orderService = Objects.requireNonNull(orderService, "OrderService không được để trống.");
     }
 
+    @Override
     public void register(HttpServer server) throws IOException {
         HttpSupport.register(server, "/", "GET", this::showMenu);
         HttpSupport.register(server, "/cart/add", "POST", this::addProduct);
@@ -36,7 +47,7 @@ public final class CustomerController {
 
     private void showMenu(HttpExchange exchange) throws IOException {
         CartSession cart = getCart(exchange);
-        HttpSupport.html(exchange, 200, CustomerView.buildCustomerHtml(restaurant.getMenu(), cart));
+        HttpSupport.html(exchange, 200, CustomerView.buildCustomerHtml(orderService.getMenu(), cart));
     }
 
     private void addProduct(HttpExchange exchange) throws IOException {
@@ -44,13 +55,11 @@ public final class CustomerController {
         try {
             Map<String, String> fields = HttpSupport.readForm(exchange);
             int productId = HttpSupport.readNumber(fields, "id", "Mã món không hợp lệ.");
-            MenuItem product = restaurant.findMenuItem(productId).orElse(null);
-            if (product == null) {
-                sendCart(exchange, cart, 404, "Món ăn không có trong thực đơn.");
-                return;
-            }
+            MenuItem product = orderService.getMenuItem(productId);
             cart.addProduct(product, fields.get("note"));
             sendCart(exchange, cart, 200, "");
+        } catch (ResourceNotFoundException exception) {
+            sendCart(exchange, cart, 404, exception.getMessage());
         } catch (IllegalArgumentException exception) {
             sendCart(exchange, cart, 400, exception.getMessage());
         }
@@ -77,9 +86,9 @@ public final class CustomerController {
         try {
             Map<String, String> fields = HttpSupport.readForm(exchange);
             Customer customer = new Customer(fields.get("name"), fields.get("table"), fields.get("phone"));
-            Order order = restaurant.submitOrder(customer, cart);
+            Order order = orderService.submitOrder(customer, cart);
             sendCart(exchange, cart, 200, "Đặt món thành công! Đơn #" + order.getOrderId() + " đã được gửi tới bếp.");
-        } catch (InvalidPhoneNumberException | IllegalArgumentException exception) {
+        } catch (RestaurantException | IllegalArgumentException exception) {
             sendCart(exchange, cart, 400, exception.getMessage());
         }
     }

@@ -1,6 +1,6 @@
 package restaurant.exception;
 
-public final class InvalidPhoneNumberException extends Exception {
+public final class InvalidPhoneNumberException extends RestaurantException {
     private static final long serialVersionUID = 1L;
 
     public InvalidPhoneNumberException() {

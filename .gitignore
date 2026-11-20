@@ -1,5 +1,6 @@
 *.class
 /target/
 /out/
+/data/
 /.idea/
 *.iml

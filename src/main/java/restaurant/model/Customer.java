@@ -11,16 +11,13 @@ public final class Customer extends User {
     private final String phone;
 
     public Customer(String name, String tableNumber, String phone) throws InvalidPhoneNumberException {
-        super(UUID.randomUUID().toString().substring(0, 8), requireField(name, "Tên thực khách"));
-        this.tableNumber = requireField(tableNumber, "Vị trí bàn hoặc hình thức nhận món");
-        this.phone = validatePhone(phone);
+        this(UUID.randomUUID().toString().substring(0, 8), name, tableNumber, phone);
     }
 
-    private static String requireField(String value, String label) {
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(label + " là thông tin bắt buộc.");
-        }
-        return value.strip();
+    public Customer(String id, String name, String tableNumber, String phone) throws InvalidPhoneNumberException {
+        super(id, Validation.requireNonBlank(name, "Tên thực khách"));
+        this.tableNumber = Validation.requireNonBlank(tableNumber, "Vị trí bàn hoặc hình thức nhận món");
+        this.phone = validatePhone(phone);
     }
 
     private static String validatePhone(String phone) throws InvalidPhoneNumberException {
@@ -45,5 +42,11 @@ public final class Customer extends User {
     @Override
     public String getRoleName() {
         return "Khách hàng";
+    }
+
+    @Override
+    public String getProfileSummary() {
+        String phoneDisplay = phone.isEmpty() ? "Chưa có SĐT" : phone;
+        return getName() + " | Vị trí: " + tableNumber + " | SĐT: " + phoneDisplay;
     }
 }
