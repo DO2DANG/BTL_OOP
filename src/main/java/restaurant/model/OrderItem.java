@@ -3,6 +3,9 @@ package restaurant.model;
 import java.util.Objects;
 
 public final class OrderItem {
+    public static final int MAX_QUANTITY = 99;
+    public static final int MAX_NOTE_LENGTH = 200;
+
     private final MenuItem item;
     private final int quantity;
     private final String note;
@@ -10,7 +13,10 @@ public final class OrderItem {
     public OrderItem(MenuItem item, int quantity, String note) {
         this.item = Objects.requireNonNull(item, "Món ăn trong dòng đơn không được để trống.");
         this.quantity = Validation.requirePositive(quantity, "Số lượng món");
-        this.note = note == null ? "" : note.strip();
+        if (this.quantity > MAX_QUANTITY) {
+            throw new IllegalArgumentException("Mỗi món chỉ đặt tối đa " + MAX_QUANTITY + " phần trong một đơn.");
+        }
+        this.note = Validation.requireMaxLength(note, MAX_NOTE_LENGTH, "Ghi chú món ăn");
     }
 
     public MenuItem getItem() {
@@ -26,7 +32,7 @@ public final class OrderItem {
     }
 
     public long getSubtotal() {
-        return item.getPrice() * quantity;
+        return Math.multiplyExact(item.getPrice(), (long) quantity);
     }
 
     @Override

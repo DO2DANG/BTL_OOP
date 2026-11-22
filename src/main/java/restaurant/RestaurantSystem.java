@@ -6,6 +6,8 @@ import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import restaurant.controller.CustomerController;
 import restaurant.controller.KitchenController;
 import restaurant.controller.WebController;
@@ -39,10 +41,15 @@ public final class RestaurantSystem {
         WebController customerController = new CustomerController(orderService);
         WebController kitchenController = new KitchenController(orderService, owner);
 
+        int workerThreads = Math.max(4, Runtime.getRuntime().availableProcessors());
+        ExecutorService httpExecutor = Executors.newFixedThreadPool(workerThreads);
+
         HttpServer customerServer = openServer(CUSTOMER_PORT);
         HttpServer kitchenServer = null;
         try {
             kitchenServer = openServer(KITCHEN_PORT);
+            customerServer.setExecutor(httpExecutor);
+            kitchenServer.setExecutor(httpExecutor);
             customerController.register(customerServer);
             kitchenController.register(kitchenServer);
             customerServer.start();
@@ -52,8 +59,16 @@ public final class RestaurantSystem {
             if (kitchenServer != null) {
                 kitchenServer.stop(0);
             }
+            httpExecutor.shutdownNow();
             throw exception;
         }
+
+        HttpServer activeKitchenServer = kitchenServer;
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            customerServer.stop(0);
+            activeKitchenServer.stop(0);
+            httpExecutor.shutdown();
+        }, "restaurant-shutdown"));
 
         System.out.println("Chế độ lưu đơn: " + (useFileStorage ? "Tệp (data/orders.txt)" : "RAM (InMemory)"));
         System.out.println("Khách hàng: http://localhost:" + customerServer.getAddress().getPort());

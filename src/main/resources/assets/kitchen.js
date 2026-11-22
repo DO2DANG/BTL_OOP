@@ -1,6 +1,10 @@
 const totalSelector = '.metric-tile:nth-child(3) .metric-value';
-const currentTotal = Number(document.querySelector(totalSelector).textContent);
-const currentTickets = document.querySelector('.orders-grid').innerHTML;
+const metricsSelector = '.metrics-grid';
+const ordersSelector = '.orders-grid';
+
+let currentTotal = Number(document.querySelector(totalSelector)?.textContent || 0);
+let currentTickets = document.querySelector(ordersSelector)?.innerHTML || '';
+let currentMetrics = document.querySelector(metricsSelector)?.innerHTML || '';
 
 async function refreshOrders() {
   try {
@@ -9,15 +13,24 @@ async function refreshOrders() {
 
     const html = await response.text();
     const page = new DOMParser().parseFromString(html, 'text/html');
-    const total = page.querySelector(totalSelector);
-    const tickets = page.querySelector('.orders-grid');
-    if (!total || !tickets) return;
+    const totalEl = page.querySelector(totalSelector);
+    const nextMetricsEl = page.querySelector(metricsSelector);
+    const nextTicketsEl = page.querySelector(ordersSelector);
+    if (!totalEl || !nextMetricsEl || !nextTicketsEl) return;
 
-    if (Number(total.textContent) > currentTotal) {
+    const nextTotal = Number(totalEl.textContent);
+    if (nextTotal > currentTotal) {
       new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(() => {});
     }
-    if (tickets.innerHTML !== currentTickets) {
-      location.reload();
+    currentTotal = nextTotal;
+
+    if (nextMetricsEl.innerHTML !== currentMetrics) {
+      document.querySelector(metricsSelector).innerHTML = nextMetricsEl.innerHTML;
+      currentMetrics = nextMetricsEl.innerHTML;
+    }
+    if (nextTicketsEl.innerHTML !== currentTickets) {
+      document.querySelector(ordersSelector).innerHTML = nextTicketsEl.innerHTML;
+      currentTickets = nextTicketsEl.innerHTML;
     }
   } catch (error) {
     console.warn('Chưa thể cập nhật đơn bếp.', error);

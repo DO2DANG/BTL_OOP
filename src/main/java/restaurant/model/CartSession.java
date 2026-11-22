@@ -57,13 +57,15 @@ public final class CartSession {
     }
 
     public synchronized long getTotalPrice() {
-        return items.values().stream().mapToLong(OrderItem::getSubtotal).sum();
+        return items.values().stream().mapToLong(OrderItem::getSubtotal).max().isEmpty()
+                ? 0L
+                : items.values().stream().mapToLong(OrderItem::getSubtotal).reduce(0L, Math::addExact);
     }
 
     public synchronized Snapshot snapshot() {
         List<OrderItem> currentItems = List.copyOf(items.values());
         int totalQty = currentItems.stream().mapToInt(OrderItem::getQuantity).sum();
-        long totalPrice = currentItems.stream().mapToLong(OrderItem::getSubtotal).sum();
+        long totalPrice = currentItems.stream().mapToLong(OrderItem::getSubtotal).reduce(0L, Math::addExact);
         return new Snapshot(currentItems, totalQty, totalPrice);
     }
 

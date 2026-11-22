@@ -2,6 +2,7 @@ package restaurant.view;
 
 import java.util.List;
 import restaurant.model.CartSession;
+import restaurant.model.Customer;
 import restaurant.model.MenuCategory;
 import restaurant.model.MenuItem;
 import restaurant.model.OrderItem;
@@ -11,10 +12,14 @@ public final class CustomerView {
     }
 
     public static String buildCartInnerHtml(CartSession cart, String notification) {
-        return buildCartInnerHtml(cart.snapshot(), notification);
+        return buildCartInnerHtml(cart, notification, false);
     }
 
-    private static String buildCartInnerHtml(CartSession.Snapshot snapshot, String notification) {
+    public static String buildCartInnerHtml(CartSession cart, String notification, boolean isError) {
+        return buildCartInnerHtml(cart.snapshot(), notification, isError);
+    }
+
+    private static String buildCartInnerHtml(CartSession.Snapshot snapshot, String notification, boolean isError) {
         StringBuilder sb = new StringBuilder();
         int totalQty = snapshot.totalQuantity();
         long totalPrice = snapshot.totalPrice();
@@ -32,7 +37,10 @@ public final class CustomerView {
         sb.append("</div>");
 
         if (notification != null && !notification.isBlank()) {
-            sb.append("<div class='order-banner'>").append(Html.escape(notification)).append("</div>");
+            String bannerClass = isError ? "order-banner error" : "order-banner";
+            String ariaRole = isError ? "alert" : "status";
+            sb.append("<div class='").append(bannerClass).append("' role='").append(ariaRole).append("'>")
+              .append(Html.escape(notification)).append("</div>");
         }
 
         if (snapshot.isEmpty()) {
@@ -81,16 +89,18 @@ public final class CustomerView {
             sb.append("<form onsubmit='submitAjax(event, this)' action='/cart/submit' class='checkout-form'>");
             sb.append("<div class='field-group'>");
             sb.append("<label class='field-label'>Tên thực khách</label>");
-            sb.append("<input type='text' name='name' class='input-control' required placeholder='Nhập tên của bạn (VD: Minh Quân)'>");
+            sb.append("<input type='text' name='name' maxlength='").append(Customer.MAX_NAME_LENGTH)
+              .append("' class='input-control' required placeholder='Nhập tên của bạn (VD: Minh Quân)'>");
             sb.append("</div>");
             sb.append("<div class='field-row'>");
             sb.append("<div class='field-group'>");
             sb.append("<label class='field-label'>Vị trí bàn / Hình thức</label>");
-            sb.append("<input type='text' name='table' class='input-control' required placeholder='VD: Bàn 06 hoặc Mang về'>");
+            sb.append("<input type='text' name='table' maxlength='").append(Customer.MAX_TABLE_LENGTH)
+              .append("' class='input-control' required placeholder='VD: Bàn 06 hoặc Mang về'>");
             sb.append("</div>");
             sb.append("<div class='field-group'>");
             sb.append("<label class='field-label'>Số điện thoại</label>");
-            sb.append("<input type='tel' name='phone' class='input-control' placeholder='Không bắt buộc. VD: 0912345678'>");
+            sb.append("<input type='tel' name='phone' maxlength='20' class='input-control' placeholder='Không bắt buộc. VD: 0912345678'>");
             sb.append("</div>");
             sb.append("</div>");
             sb.append("<button type='submit' class='btn-checkout'><span class='btn-checkout-text'>XÁC NHẬN ĐẶT MÓN</span></button>");
@@ -105,6 +115,7 @@ public final class CustomerView {
         sb.append("<!DOCTYPE html><html lang='vi'><head><meta charset='UTF-8'>");
         sb.append("<meta name='viewport' content='width=device-width, initial-scale=1.0, viewport-fit=cover'>");
         sb.append("<title>Gà Vàng Phố Cổ — Chuyên Cơm Gà & Món Gà Thủ Công</title>");
+        sb.append("<link rel='icon' href='data:,'>");
         sb.append("<link rel='preconnect' href='https://fonts.googleapis.com'>");
         sb.append("<link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>");
         sb.append("<link href='https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap' rel='stylesheet'>");
@@ -171,7 +182,8 @@ public final class CustomerView {
 
             sb.append("<form onsubmit='submitAjax(event, this)' action='/cart/add'>");
             sb.append("<input type='hidden' name='id' value='").append(item.getId()).append("'>");
-            sb.append("<input type='text' name='note' class='food-note' placeholder='Ghi chú (VD: Nhiều sốt, ít hành, thêm ớt...)'>");
+            sb.append("<input type='text' name='note' maxlength='").append(OrderItem.MAX_NOTE_LENGTH)
+              .append("' class='food-note' placeholder='Ghi chú (VD: Nhiều sốt, ít hành, thêm ớt...)'>");
             sb.append("<button type='submit' class='btn-add-cart' onclick='spawnRipple(event, this)'>THÊM VÀO ĐƠN</button>");
             sb.append("</form>");
             sb.append("</div></article>");
@@ -181,7 +193,7 @@ public final class CustomerView {
 
         // Cart Container (Desktop Sticky / Mobile Bottom Drawer)
         sb.append("<aside id='cart-box' class='cart-container' aria-label='Giỏ hàng'>");
-        sb.append(buildCartInnerHtml(snapshot, ""));
+        sb.append(buildCartInnerHtml(snapshot, "", false));
         sb.append("</aside>");
 
         sb.append("</main>");

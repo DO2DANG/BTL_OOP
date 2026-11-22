@@ -49,11 +49,18 @@ public final class RestaurantService implements OrderService {
     public Order submitOrder(Customer customer, CartSession cart) throws EmptyCartException {
         Objects.requireNonNull(customer, "Khách đặt đơn không được để trống.");
         Objects.requireNonNull(cart, "Giỏ hàng không được để trống.");
-        List<OrderItem> items = cart.drainItems();
-        synchronized (this) {
-            int orderId = orderRepository.nextOrderId();
-            Order order = new Order(orderId, customer, items);
-            orderRepository.save(order);
+        synchronized (cart) {
+            List<OrderItem> items = cart.getItems();
+            if (items.isEmpty()) {
+                throw new EmptyCartException();
+            }
+            Order order;
+            synchronized (this) {
+                int orderId = orderRepository.nextOrderId();
+                order = new Order(orderId, customer, items);
+                orderRepository.save(order);
+            }
+            cart.clear();
             return order;
         }
     }
@@ -72,6 +79,6 @@ public final class RestaurantService implements OrderService {
         return orderRepository.findAll().stream()
                 .filter(order -> order.getStatus() == OrderStatus.READY)
                 .mapToLong(Order::calculateTotal)
-                .sum();
+                .reduce(0L, Math::addExact);
     }
 }

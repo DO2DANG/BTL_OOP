@@ -28,6 +28,7 @@ public final class KitchenController implements WebController {
     public void register(HttpServer server) throws IOException {
         HttpSupport.register(server, "/", "GET", this::showOrders);
         HttpSupport.register(server, "/status", "POST", this::changeStatus);
+        HttpSupport.registerFavicon(server);
         HttpSupport.registerAsset(server, "/assets/kitchen.css", "text/css; charset=UTF-8");
         HttpSupport.registerAsset(server, "/assets/kitchen.js", "text/javascript; charset=UTF-8");
     }

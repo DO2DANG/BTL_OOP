@@ -36,6 +36,10 @@ final class HttpSupport {
         });
     }
 
+    static void registerFavicon(HttpServer server) {
+        register(server, "/favicon.ico", "GET", exchange -> exchange.sendResponseHeaders(204, -1));
+    }
+
     static void registerAsset(HttpServer server, String path, String contentType) throws IOException {
         try (InputStream input = HttpSupport.class.getResourceAsStream(path)) {
             if (input == null) {

@@ -1,6 +1,8 @@
 package restaurant;
 
 import com.sun.net.httpserver.HttpServer;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -9,6 +11,7 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import restaurant.controller.CustomerController;
 import restaurant.controller.KitchenController;
 import restaurant.exception.EmptyCartException;
@@ -167,6 +170,21 @@ public final class RestaurantOopTest {
         } finally {
             Files.deleteIfExists(tempFile);
         }
+
+        // Kiểm chứng an toàn giỏ hàng khi lưu đơn gặp lỗi I/O
+        MenuRepository menuRepo = new InMemoryMenuRepository();
+        OrderRepository failingRepo = new OrderRepository() {
+            @Override public int nextOrderId() { return 600; }
+            @Override public void save(Order order) { throw new UncheckedIOException(new IOException("Disk full")); }
+            @Override public Optional<Order> findById(int orderId) { return Optional.empty(); }
+            @Override public List<Order> findAll() { return List.of(); }
+        };
+        OrderService failingService = new RestaurantService(menuRepo, failingRepo);
+        CartSession safeCart = new CartSession();
+        safeCart.addProduct(menuRepo.findById(1).orElseThrow(), "Giữ nguyên giỏ");
+        Customer customer = new Customer("Bảo Châu", "Bàn 09", "0912345678");
+        expectThrows(UncheckedIOException.class, () -> failingService.submitOrder(customer, safeCart));
+        check(safeCart.getTotalQuantity() == 1, "Giỏ hàng không được mất món khi lưu đơn thất bại");
         passed++;
     }
 
@@ -212,6 +230,11 @@ public final class RestaurantOopTest {
             check(homeRes.statusCode() == 200, "Trang khách phải trả HTTP 200");
             String cookie = homeRes.headers().firstValue("Set-Cookie").orElseThrow().split(";", 2)[0];
 
+            HttpResponse<String> faviconRes = client.send(
+                    HttpRequest.newBuilder(URI.create("http://localhost:" + cPort + "/favicon.ico")).GET().build(),
+                    HttpResponse.BodyHandlers.ofString());
+            check(faviconRes.statusCode() == 204, "Favicon phải trả HTTP 204 không báo lỗi");
+
             HttpResponse<String> addRes = client.send(
                     HttpRequest.newBuilder(URI.create("http://localhost:" + cPort + "/cart/add"))
                             .header("Cookie", cookie)
@@ -219,6 +242,17 @@ public final class RestaurantOopTest {
                             .build(),
                     HttpResponse.BodyHandlers.ofString());
             check(addRes.statusCode() == 200 && addRes.body().contains("45.000"), "Thêm món qua HTTP thất bại");
+
+            HttpResponse<String> badPhoneRes = client.send(
+                    HttpRequest.newBuilder(URI.create("http://localhost:" + cPort + "/cart/submit"))
+                            .header("Cookie", cookie)
+                            .POST(HttpRequest.BodyPublishers.ofString("name=Minh+Quan&table=Ban+05&phone=123"))
+                            .build(),
+                    HttpResponse.BodyHandlers.ofString());
+            check(badPhoneRes.statusCode() == 400
+                    && badPhoneRes.body().contains("order-banner error")
+                    && badPhoneRes.body().contains("45.000"),
+                    "Lỗi SĐT phải trả 400 với khung cảnh báo đỏ và giữ nguyên giỏ hàng");
 
             HttpResponse<String> submitRes = client.send(
                     HttpRequest.newBuilder(URI.create("http://localhost:" + cPort + "/cart/submit"))

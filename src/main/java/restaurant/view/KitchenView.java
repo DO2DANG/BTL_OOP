@@ -19,6 +19,7 @@ public final class KitchenView {
         sb.append("<!DOCTYPE html><html lang='vi'><head><meta charset='UTF-8'>");
         sb.append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>");
         sb.append("<title>Hệ Thống Điều Phối Bếp — Gà Vàng Phố Cổ</title>");
+        sb.append("<link rel='icon' href='data:,'>");
         sb.append("<link href='https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&display=swap' rel='stylesheet'>");
         sb.append("<link rel='stylesheet' href='/assets/kitchen.css'>");
         sb.append("<script src='/assets/kitchen.js' defer></script></head><body>");

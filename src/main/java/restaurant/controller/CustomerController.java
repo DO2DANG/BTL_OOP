@@ -41,6 +41,7 @@ public final class CustomerController implements WebController {
         HttpSupport.register(server, "/cart/add", "POST", this::addProduct);
         HttpSupport.register(server, "/cart/quantity", "POST", this::changeQuantity);
         HttpSupport.register(server, "/cart/submit", "POST", this::submitOrder);
+        HttpSupport.registerFavicon(server);
         HttpSupport.registerAsset(server, "/assets/customer.css", "text/css; charset=UTF-8");
         HttpSupport.registerAsset(server, "/assets/customer.js", "text/javascript; charset=UTF-8");
     }
@@ -117,6 +118,7 @@ public final class CustomerController implements WebController {
     }
 
     private void sendCart(HttpExchange exchange, CartSession cart, int status, String notification) throws IOException {
-        HttpSupport.html(exchange, status, CustomerView.buildCartInnerHtml(cart, notification));
+        boolean isError = status >= 400;
+        HttpSupport.html(exchange, status, CustomerView.buildCartInnerHtml(cart, notification, isError));
     }
 }

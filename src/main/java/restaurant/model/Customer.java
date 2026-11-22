@@ -5,6 +5,8 @@ import java.util.regex.Pattern;
 import restaurant.exception.InvalidPhoneNumberException;
 
 public final class Customer extends User {
+    public static final int MAX_NAME_LENGTH = 80;
+    public static final int MAX_TABLE_LENGTH = 50;
     private static final Pattern PHONE_PATTERN = Pattern.compile("(?:0|\\+84)[1-9][0-9]{8,9}");
 
     private final String tableNumber;
@@ -15,8 +17,8 @@ public final class Customer extends User {
     }
 
     public Customer(String id, String name, String tableNumber, String phone) throws InvalidPhoneNumberException {
-        super(id, Validation.requireNonBlank(name, "Tên thực khách"));
-        this.tableNumber = Validation.requireNonBlank(tableNumber, "Vị trí bàn hoặc hình thức nhận món");
+        super(id, Validation.requireNonBlank(name, MAX_NAME_LENGTH, "Tên thực khách"));
+        this.tableNumber = Validation.requireNonBlank(tableNumber, MAX_TABLE_LENGTH, "Vị trí bàn hoặc hình thức nhận món");
         this.phone = validatePhone(phone);
     }
 

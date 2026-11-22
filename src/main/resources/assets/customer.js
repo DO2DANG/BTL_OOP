@@ -1,4 +1,3 @@
-
 function handleCardSpotlight(e, card) {
   const rect = card.getBoundingClientRect();
   card.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
@@ -70,6 +69,12 @@ function toggleMobileCart(open) {
   }
 }
 
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 960) {
+    toggleMobileCart(false);
+  }
+});
+
 function syncMobileBar() {
   const header = document.querySelector('#cart-box .cart-header');
   if (!header) return;
@@ -79,13 +84,14 @@ function syncMobileBar() {
   document.getElementById('mobile-bar-price').textContent = price;
 }
 
-function showToast(msg) {
+function showToast(msg, isError = false) {
   const t = document.getElementById('toast-popup');
   const label = document.createElement('span');
   label.textContent = msg;
   const progress = document.createElement('div');
   progress.className = 'toast-progress';
   t.replaceChildren(label, progress);
+  t.classList.toggle('error', isError);
   t.classList.add('show');
   clearTimeout(window.toastTimer);
   window.toastTimer = setTimeout(() => { t.classList.remove('show'); }, 2300);
@@ -110,7 +116,7 @@ async function submitAjax(event, form) {
     const response = await fetch(path, { method: 'POST', body });
     const html = await response.text();
     if (!response.ok && !html.startsWith("<div class='cart-header'")) {
-      showToast('Chưa thể thực hiện yêu cầu. Vui lòng thử lại.');
+      showToast('Chưa thể thực hiện yêu cầu. Vui lòng thử lại.', true);
       return;
     }
 
@@ -129,7 +135,7 @@ async function submitAjax(event, form) {
 
     if (!response.ok) {
       const message = cartBox.querySelector('.order-banner')?.textContent;
-      showToast(message || 'Thông tin gửi lên chưa hợp lệ.');
+      showToast(message || 'Thông tin gửi lên chưa hợp lệ.', true);
       return;
     }
 
@@ -151,7 +157,7 @@ async function submitAjax(event, form) {
       showToast('Đơn đặt món đã được gửi tới bếp');
     }
   } catch (error) {
-    showToast('Kết nối bị gián đoạn. Vui lòng thử lại.');
+    showToast('Kết nối bị gián đoạn. Vui lòng thử lại.', true);
     console.error(error);
   } finally {
     cartRequestPending = false;
