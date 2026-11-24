@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "RestaurantSystem - lưu vào tệp",
+            "request": "launch",
+            "mainClass": "restaurant.RestaurantSystem",
+      //      "args": ["--file"],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
